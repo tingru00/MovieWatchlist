@@ -24,6 +24,12 @@ async function loadMovies() {
     img.src = movie.imageUrl;
     img.style.width = "100px";
 
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+
+    deleteButton.onclick = () => deleteMovie(movie.id);
+
+    li.appendChild(deleteButton);
     li.appendChild(title);
     li.appendChild(genre);
     li.appendChild(img);
@@ -37,3 +43,17 @@ async function loadMovies() {
 }
 
 loadMovies();
+
+//Delete a movie (DELETE)
+async function deleteMovie(id) {
+    try {
+        await fetch(`${API_URL}/${id}`, {
+            method: "DELETE"
+        });
+
+        loadMovies();
+        
+    } catch (error) {
+        console.error("Error deleting movie:", error);
+    }
+}
