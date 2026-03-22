@@ -1,68 +1,31 @@
-const API_URL = "https://localhost:7206/api/tournament";
+import { getMovies, createMovie, updateMovie, deleteMovie } from "./api.js";
+import { renderMovies } from "./ui.js";
 
+//Keeps track of which movie is being edited
 let editingMovieId = null;
 
-//LOAD MOVIES (GET)
+//Load and display all movies
 async function loadMovies() {
     try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-
-        const list = document.getElementById("list");
-        list.innerHTML = "";
-
-        data.forEach(movie => {
-            const li = document.createElement("li");
-
-            const title = document.createElement("h3");
-            title.textContent = movie.title;
-
-            const genre = document.createElement("p");
-            genre.textContent = "Genre: " + movie.genre;
-
-            const img = document.createElement("img");
-            img.src = movie.imageUrl;
-            img.style.width = "100px";
-
-            //DELETE BUTTON
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "Delete";
-            deleteButton.onclick = () => deleteMovie(movie.id);
-
-            //EDIT BUTTON
-            const editButton = document.createElement("button");
-            editButton.textContent = "Edit";
-            editButton.onclick = () => editMovie(movie);
-
-            li.appendChild(title);
-            li.appendChild(genre);
-            li.appendChild(img);
-            li.appendChild(deleteButton);
-            li.appendChild(editButton);
-
-            list.appendChild(li);
-        });
-
+        const movies = await getMovies();
+        renderMovies(movies, handleDelete, handleEdit);
     } catch (error) {
-        console.error("Error fetching movies:", error);
+        console.error("Error loading movies:", error);
     }
 }
 
-//DELETE
-async function deleteMovie(id) {
+//Handles delete button click
+async function handleDelete(id) {
     try {
-        await fetch(`${API_URL}/${id}`, {
-            method: "DELETE"
-        });
-
+        await deleteMovie(id);
         loadMovies();
     } catch (error) {
         console.error("Error deleting movie:", error);
     }
 }
 
-//EDIT
-function editMovie(movie) {
+//Fill form for editing (PUT)
+function handleEdit(movie) {
     document.getElementById("title").value = movie.title;
     document.getElementById("description").value = movie.description;
     document.getElementById("genre").value = movie.genre;
@@ -72,19 +35,20 @@ function editMovie(movie) {
     editingMovieId = movie.id;
 }
 
-// POST + PUT
+//Handle form submit (POST or PUT)
 document.getElementById("movieForm").addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const movie = {
-        title: document.getElementById("title").value,
-        description: document.getElementById("description").value,
-        genre: document.getElementById("genre").value,
-        imageUrl: document.getElementById("imageUrl").value,
-        date: document.getElementById("date").value
-    };
+    title: document.getElementById("title").value,
+    description: document.getElementById("description").value,
+    genre: document.getElementById("genre").value,
+    imageUrl: document.getElementById("imageUrl").value,
+    date: document.getElementById("date").value
+};
 
-    //Date validation
+console.log(movie);
+    //Validate date
     const selectedDate = new Date(movie.date);
     const currentDate = new Date();
 
@@ -95,36 +59,28 @@ document.getElementById("movieForm").addEventListener("submit", async function (
 
     try {
         if (editingMovieId !== null) {
-            //PUT
-            await fetch(`${API_URL}/${editingMovieId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(movie)
-            });
-
+            //Update existing movie (PUT)
+            await updateMovie(editingMovieId, movie);
             editingMovieId = null;
         } else {
-            //POST
-            await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(movie)
-            });
+            //Create new movie (POST)
+            await createMovie(movie);
+
+            if (movie.title.length < 3) {
+            alert("Title must be at least 3 characters long");
+            return;
+        }
         }
 
         loadMovies();
-        document.getElementById("movieForm").reset();
+        document.getElementById("movieForm").reset(); // Clear form
 
     } catch (error) {
         console.error("Error saving movie:", error);
     }
 });
 
-// Date input validation
+//Prevent selecting past dates in input
 const dateInput = document.getElementById("date");
 
 const now = new Date();
@@ -132,5 +88,5 @@ now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 
 dateInput.min = now.toISOString().slice(0, 16);
 
-
+//Initial load
 loadMovies();
