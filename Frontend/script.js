@@ -57,3 +57,48 @@ async function deleteMovie(id) {
         console.error("Error deleting movie:", error);
     }
 }
+
+//Add a new movie (POST)
+document.getElementById("movieForm").addEventListener("submit", async function (e) {
+e.preventDefault();
+
+const dateInput = document.getElementById("date");
+
+//Rule for date input
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+dateInput.min = now.toISOString().slice(0, 16);
+
+    const movie = {
+        title: document.getElementById("title").value,
+        description: document.getElementById("description").value,
+        genre: document.getElementById("genre").value,
+        imageUrl: document.getElementById("imageUrl").value,
+        date: document.getElementById("date").value
+    };
+
+    const selectedDate = new Date(document.getElementById("date").value);
+    const currentDate = new Date();
+
+    if (selectedDate < currentDate) {
+    alert("Date cannot be in the past");
+    return;
+}
+
+    try {
+        await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(movie)
+        });
+
+        loadMovies(); // uppdatera listan
+
+        document.getElementById("movieForm").reset(); // rensa form
+    } catch (error) {
+        console.error("Error adding movie:", error);
+    }
+});
