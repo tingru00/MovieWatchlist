@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    
+<!-- Navigation menu for switching between sections --> 
 <nav>
     <button onclick="showSection('movies')">My Movies</button>
 
@@ -18,10 +18,12 @@
     <button onclick="showSection('add')">Add Movie</button>
 </nav>
 
+<!-- Section displaying all movies -->
 <section id="moviesSection">
     <ul id="list"></ul>
 </section>
 
+<!-- Section for adding or editing movies -->
 <section id="addSection" class="hidden">
     <form id="movieForm">
 <input type="text" id="title" placeholder="Title" required />
