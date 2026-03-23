@@ -1,8 +1,29 @@
-<h1>Movies</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Watchlist</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="script.js"></script>
+</head>
 
-<h2>Add Movie</h2>
+<body>
+    
+<nav>
+    <button onclick="showSection('movies')">My Movies</button>
 
-<form id="movieForm">
+    <h1 class="logo">MOVIE NIGHT</h1>
+
+    <button onclick="showSection('add')">Add Movie</button>
+</nav>
+
+<section id="moviesSection">
+    <ul id="list"></ul>
+</section>
+
+<section id="addSection" class="hidden">
+    <form id="movieForm">
 <input type="text" id="title" placeholder="Title" required />
 <input type="text" id="description" placeholder="Description" required />
 <input type="text" id="genre" placeholder="Genre" required />
@@ -10,7 +31,7 @@
 <input type="datetime-local" id="date" required />
 
 <button type="submit">Add Movie</button>
-</form>
-<ul id="list"></ul>
+    </form>
+</section>
 
-<script type="module" src="script.js"></script>
+</body>

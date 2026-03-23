@@ -11,7 +11,7 @@ export function renderMovies(movies, onDelete, onEdit) {
         const img = document.createElement("img");
         img.src = movie.imageUrl;
 
-        // Overlay (hidden by default)
+        // Overlay
         const overlay = document.createElement("div");
         overlay.classList.add("overlay");
 

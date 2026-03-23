@@ -33,6 +33,7 @@ function handleEdit(movie) {
     document.getElementById("date").value = movie.date;
 
     editingMovieId = movie.id;
+    showSection("add")
 }
 
 //Handle form submit (POST or PUT)
@@ -90,3 +91,17 @@ dateInput.min = now.toISOString().slice(0, 16);
 
 //Initial load
 loadMovies();
+
+// Handles navigation between sections by showing or hiding them
+window.showSection = function (section) {
+    const movies = document.getElementById("moviesSection");
+    const add = document.getElementById("addSection");
+
+    if (section === "movies") {
+        movies.classList.remove("hidden");
+        add.classList.add("hidden");
+    } else {
+        movies.classList.add("hidden");
+        add.classList.remove("hidden");
+    }
+};
