@@ -43,10 +43,6 @@ nav button {
     cursor: pointer;
 }
 
-nav button:hover {
-    color: #e50914;
-}
-
 /* Base button style */
 button {
     padding: 8px 14px;
@@ -70,22 +66,12 @@ nav button:hover {
 }
 
 /* Edit button */
-.overlay button:first-of-type {
-    background-color: #e50914;
-    color: white;
-}
-
 .overlay button:first-of-type:hover {
     background-color: #ff1f1f;
     transform: scale(1.05);
 }
 
 /* Delete button */
-.overlay button:last-of-type {
-    background-color: #444;
-    color: white;
-}
-
 .overlay button:last-of-type:hover {
     background-color: #666;
     transform: scale(1.05);

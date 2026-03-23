@@ -7,11 +7,11 @@ export function renderMovies(movies, onDelete, onEdit) {
         const li = document.createElement("li");
         li.classList.add("movie-card");
 
-        // Movie image
+        //Movie image
         const img = document.createElement("img");
         img.src = movie.imageUrl;
 
-        // Overlay
+        //Overlay
         const overlay = document.createElement("div");
         overlay.classList.add("overlay");
 
