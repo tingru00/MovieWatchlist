@@ -35,6 +35,19 @@ The project demonstrates the full flow from frontend interaction to backend API 
 
 * SQL Server (LocalDB)
 
+## External API (TMDB)
+
+This project uses The Movie Database (TMDB) API to fetch real movie data.
+
+To use this feature:
+
+1. Create an account at https://www.themoviedb.org/
+2. Generate an API key
+3. Add your API key in `tmdbApi.js`:
+
+const API_KEY = "YOUR_API_KEY_HERE";
+
+The API key is not included in this repository for security reasons.
 ---
 
 ## How to run the project
