@@ -1,10 +1,103 @@
+//IMPORTS 
 import { getMovies, createMovie, updateMovie, deleteMovie } from "./api.js";
 import { renderMovies } from "./ui.js";
+import { searchMovies } from "./tmdbApi.js";
 
-//Keeps track of which movie is being edited
+
+//STATE
 let editingMovieId = null;
 
-//Load and display all movies
+
+//DOM
+const movieForm = document.getElementById("movieForm");
+const titleInput = document.getElementById("title");
+const descriptionInput = document.getElementById("description");
+const genreInput = document.getElementById("genre");
+const imageUrlInput = document.getElementById("imageUrl");
+const dateInput = document.getElementById("date");
+
+const moviesSection = document.getElementById("moviesSection");
+const addSection = document.getElementById("addSection");
+
+const searchInput = document.getElementById("tmdbSearch");
+const resultsList = document.getElementById("tmdbResults");
+
+
+//EVENT LISTENERS
+
+//Form submit for POST and PUT
+movieForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const movie = {
+        title: titleInput.value,
+        description: descriptionInput.value,
+        genre: genreInput.value,
+        imageUrl: imageUrlInput.value,
+        date: dateInput.value
+    };
+
+    //Validation
+    const selectedDate = new Date(movie.date);
+    const currentDate = new Date();
+
+    if (movie.title.length < 3) {
+        return alert("Title must be at least 3 characters long");
+    }
+
+    if (selectedDate < currentDate) {
+        return alert("Date cannot be in the past");
+    }
+
+    try {
+        if (editingMovieId !== null) {
+            await updateMovie(editingMovieId, movie);
+            editingMovieId = null;
+        } else {
+            await createMovie(movie);
+        }
+
+        movieForm.reset();
+        loadMovies();
+
+    } catch (error) {
+        console.error("Error saving movie:", error);
+        alert("Something went wrong");
+    }
+});
+
+
+//TMDB Search
+searchInput.addEventListener("input", async () => {
+    const query = searchInput.value;
+
+    if (query.length < 2) {
+        resultsList.innerHTML = "";
+        return;
+    }
+
+    const movies = await searchMovies(query);
+
+    resultsList.innerHTML = "";
+
+    movies.forEach(movie => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" />
+            <p>${movie.title}</p>
+        `;
+
+        li.onclick = () => addFromTMDB(movie);
+
+        resultsList.appendChild(li);
+    });
+});
+
+
+//FUNCTIONS
+
+//Load movies
 async function loadMovies() {
     try {
         const movies = await getMovies();
@@ -14,7 +107,7 @@ async function loadMovies() {
     }
 }
 
-//Handles delete button click
+//Delete
 async function handleDelete(id) {
     try {
         await deleteMovie(id);
@@ -24,84 +117,79 @@ async function handleDelete(id) {
     }
 }
 
-//Fill form for editing (PUT)
+//Edit
 function handleEdit(movie) {
-    document.getElementById("title").value = movie.title;
-    document.getElementById("description").value = movie.description;
-    document.getElementById("genre").value = movie.genre;
-    document.getElementById("imageUrl").value = movie.imageUrl;
-    document.getElementById("date").value = movie.date;
+    titleInput.value = movie.title;
+    descriptionInput.value = movie.description;
+    genreInput.value = movie.genre;
+    imageUrlInput.value = movie.imageUrl;
+    dateInput.value = movie.date;
 
     editingMovieId = movie.id;
-    showSection("add")
+    showSection("add");
 }
 
-//Handle form submit (POST or PUT)
-document.getElementById("movieForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
+//Add from TMDB
+async function addFromTMDB(movie) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 
-    const movie = {
-    title: document.getElementById("title").value,
-    description: document.getElementById("description").value,
-    genre: document.getElementById("genre").value,
-    imageUrl: document.getElementById("imageUrl").value,
-    date: document.getElementById("date").value
-};
-
-console.log(movie);
-    //Validate date
-    const selectedDate = new Date(movie.date);
-    const currentDate = new Date();
-
-    if (selectedDate < currentDate) {
-        alert("Date cannot be in the past");
-        return;
-    }
+    const newMovie = {
+        title: movie.title || "Unknown title",
+        description: movie.overview && movie.overview.trim() !== "" 
+            ? movie.overview 
+            : "No description available",
+        genre: "Unknown",
+        imageUrl: movie.poster_path 
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : "https://via.placeholder.com/300x450",
+        date: now.toISOString().slice(0, 16)
+    };
 
     try {
-        if (editingMovieId !== null) {
-            //Update existing movie (PUT)
-            await updateMovie(editingMovieId, movie);
-            editingMovieId = null;
-        } else {
-            //Create new movie (POST)
-            await createMovie(movie);
+        await createMovie(newMovie);
 
-            if (movie.title.length < 3) {
-            alert("Title must be at least 3 characters long");
-            return;
-        }
-        }
-
+        showToast("✔ Movie added!");
         loadMovies();
-        document.getElementById("movieForm").reset(); // Clear form
+
+        resultsList.innerHTML = "";
+        searchInput.value = "";
 
     } catch (error) {
-        console.error("Error saving movie:", error);
+        console.error(error);
+        alert("Could not add movie");
     }
-});
-
-//Prevent selecting past dates in input
-const dateInput = document.getElementById("date");
-
-const now = new Date();
-now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-
-dateInput.min = now.toISOString().slice(0, 16);
-
-//Initial load
-loadMovies();
-
-// Handles navigation between sections by showing or hiding them
+}
+//Navigation
 window.showSection = function (section) {
-    const movies = document.getElementById("moviesSection");
-    const add = document.getElementById("addSection");
-
     if (section === "movies") {
-        movies.classList.remove("hidden");
-        add.classList.add("hidden");
+        moviesSection.classList.remove("hidden");
+        addSection.classList.add("hidden");
     } else {
-        movies.classList.add("hidden");
-        add.classList.remove("hidden");
+        moviesSection.classList.add("hidden");
+        addSection.classList.remove("hidden");
     }
 };
+
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+
+    toast.classList.remove("hidden");
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+
+
+//INIT
+
+//Prevent past dates
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+dateInput.min = now.toISOString().slice(0, 16);
+
+// Initial load
+loadMovies();

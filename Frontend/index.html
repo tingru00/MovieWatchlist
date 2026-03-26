@@ -15,8 +15,17 @@
 
     <h1 class="logo">MOVIE NIGHT</h1>
 
+    <!-- Search input-->
+    <input type="text" id="tmdbSearch" placeholder="Search movies..." />
+
     <button onclick="showSection('add')">Add Movie</button>
 </nav>
+
+<!-- Search result -->
+<section id="searchSection">
+    <ul id="tmdbResults"></ul>
+</section>
+
 
 <!-- Section displaying all movies -->
 <section id="moviesSection">
@@ -36,4 +45,6 @@
     </form>
 </section>
 
+<!-- Toast notification -->
+<div id="toast" class="toast hidden">✔ Movie added!</div>
 </body>
